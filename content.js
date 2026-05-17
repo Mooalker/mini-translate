@@ -1,3 +1,5 @@
+console.log("[mini-translate] content script loaded ✓");
+
 // Translation cache: text → translated result (page-level, clears on refresh)
 const cache = new Map();
 
@@ -109,6 +111,7 @@ document.addEventListener("mouseup", async (e) => {
   if (e.metaKey) return; // feature 2 territory
   const sel = window.getSelection();
   const text = sel?.toString().trim();
+  console.log("[mini-translate] mouseup, selected text:", JSON.stringify(text));
 
   if (!text || text.length < 2) {
     // Don't clear immediately; let click-outside handler do it
@@ -179,6 +182,7 @@ function findTranslatable(el) {
 document.addEventListener("keydown", (e) => {
   if (e.key === "Meta") {
     cmdDown = true;
+    console.log("[mini-translate] Command key down, hover-translate active");
     // Highlight element currently under mouse
     if (hoveredEl) applyHighlight(hoveredEl);
   }
