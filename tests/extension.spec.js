@@ -63,23 +63,23 @@ test("划词翻译完整流程：点击按钮 → tooltip 显示译文", async (
   await expect(tip).toContainText("模拟翻译");
 });
 
-test("按住 Command 悬停高亮段落", async ({ context }) => {
+test("按住 Option 悬停高亮段落", async ({ context }) => {
   const page = await context.newPage();
   await page.goto(PAGE);
   await page.waitForTimeout(400);
   const box = await page.locator("#para1").boundingBox();
-  await page.keyboard.down("Meta");
+  await page.keyboard.down("Alt");
   await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
   await page.waitForTimeout(300);
   const outline = await page
     .locator("#para1")
     .evaluate((el) => el.style.outline);
-  await page.keyboard.up("Meta");
+  await page.keyboard.up("Alt");
   expect(outline).toContain("solid");
   expect(outline).toContain("2px");
 });
 
-test("Command + 点击段落：翻译结果显示在原文下方", async ({
+test("Option + 点击段落：翻译结果显示在原文下方", async ({
   context,
   extensionId,
 }) => {
@@ -89,11 +89,11 @@ test("Command + 点击段落：翻译结果显示在原文下方", async ({
   await page.goto(PAGE);
   await page.waitForTimeout(400);
   const box = await page.locator("#para1").boundingBox();
-  await page.keyboard.down("Meta");
+  await page.keyboard.down("Alt");
   await page.mouse.move(box.x + 30, box.y + 12);
   await page.mouse.down();
   await page.mouse.up();
-  await page.keyboard.up("Meta");
+  await page.keyboard.up("Alt");
   const result = page.locator(".mini-translate-result");
   await expect(result).toBeVisible({ timeout: 5000 });
   await expect(result).toContainText("模拟翻译");
@@ -105,11 +105,11 @@ test("未配置 API Key 时显示错误提示", async ({ context }) => {
   await page.goto(PAGE);
   await page.waitForTimeout(400);
   const box = await page.locator("#para2").boundingBox();
-  await page.keyboard.down("Meta");
+  await page.keyboard.down("Alt");
   await page.mouse.move(box.x + 30, box.y + 12);
   await page.mouse.down();
   await page.mouse.up();
-  await page.keyboard.up("Meta");
+  await page.keyboard.up("Alt");
   const err = page.locator(".mini-translate-error");
   await expect(err).toBeVisible({ timeout: 5000 });
   await expect(err).toContainText("API Key");
@@ -137,7 +137,7 @@ test("翻译缓存：相同段落不重复请求 API", async ({
   const cx = box.x + 30;
   const cy = box.y + 12;
 
-  await page.keyboard.down("Meta");
+  await page.keyboard.down("Alt");
 
   // 1st translate → API call
   await page.mouse.move(cx, cy);
@@ -155,7 +155,7 @@ test("翻译缓存：相同段落不重复请求 API", async ({
   // 3rd click → re-translate, should hit cache (no new API call)
   await page.mouse.down();
   await page.mouse.up();
-  await page.keyboard.up("Meta");
+  await page.keyboard.up("Alt");
   await expect(page.locator(".mini-translate-result")).toBeVisible({
     timeout: 5000,
   });

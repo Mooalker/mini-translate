@@ -5,7 +5,7 @@
 ## 功能
 
 - **划词翻译**：选中文字 → 点击「译」按钮 → tooltip 显示翻译
-- **段落沉浸翻译**：按住 `⌘ Command` + 点击段落 → 翻译结果显示在原文正下方
+- **段落沉浸翻译**：按住 `⌥ Option` + 点击段落 → 翻译结果显示在原文正下方
 
 ## 安装
 
@@ -36,6 +36,10 @@ mini-translate/
 
 `gemini-2.0-flash-lite` — 对混合技术/新闻/口语内容的翻译质量优于传统 NMT 引擎。
 
+## 隐私说明
+
+翻译时，选中或点击的文本会随你的 API Key 一并发送至 Google Gemini API 进行处理。插件不会上传任何其他数据，API Key 仅保存在本地浏览器。**请勿在网银、企业内部系统等敏感页面使用本插件。**
+
 ## 测试
 
 E2E 测试基于 Playwright，真实加载扩展并模拟交互（划词、按键、网络 mock）。
@@ -46,7 +50,7 @@ npx playwright install chromium
 npm test
 ```
 
-覆盖：content script 注入、划词翻译、段落翻译、Command 高亮、错误处理、翻译缓存。
+覆盖：content script 注入、划词翻译、段落翻译、Option 高亮、错误处理、翻译缓存。
 
 ## License
 

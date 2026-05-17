@@ -1,10 +1,19 @@
 console.log("[mini-translate] content script loaded ✓");
 
-// Translation cache: text → translated result (page-level, clears on refresh)
+// Translation cache: text → translated result (page-level, clears on refresh).
+// Capped to avoid unbounded growth on long sessions; oldest entry evicted first.
+const CACHE_LIMIT = 200;
 const cache = new Map();
 
-// Track Command key state
-let cmdDown = false;
+function cacheSet(text, result) {
+  if (cache.size >= CACHE_LIMIT) {
+    cache.delete(cache.keys().next().value);
+  }
+  cache.set(text, result);
+}
+
+// Track Option/Alt key state (paragraph-translation modifier)
+let altDown = false;
 let hoveredEl = null;
 let highlightedEl = null;
 
@@ -99,6 +108,9 @@ function errorMessage(code) {
     RATE_LIMIT: "请求过频，稍后再试",
     INVALID_KEY: "API Key 无效，请在设置中重新配置",
     EMPTY_RESPONSE: "翻译失败，请重试",
+    TIMEOUT: "翻译超时，请检查网络后重试",
+    NETWORK: "网络错误，请检查连接后重试",
+    BAD_REQUEST: "请求出错，请重试",
   };
   return map[code] ?? "翻译失败，请重试";
 }
@@ -108,7 +120,7 @@ function errorMessage(code) {
 let selectionBtn = null;
 
 document.addEventListener("mouseup", async (e) => {
-  if (e.metaKey) return; // feature 2 territory
+  if (e.altKey) return; // feature 2 territory
 
   // Ignore mouseup on our own UI — clicking the 「译」button must not
   // re-trigger selection logic (which would destroy the button before
@@ -145,7 +157,7 @@ document.addEventListener("mouseup", async (e) => {
 
     const res = await sendTranslate(text);
     if (res?.result) {
-      cache.set(text, res.result);
+      cacheSet(text, res.result);
       showTooltip(res.result, rect);
     } else {
       showTooltip(errorMessage(res?.error), rect);
@@ -167,7 +179,7 @@ document.addEventListener("keydown", (e) => {
   if (e.key === "Escape") removeAllTooltips();
 });
 
-// ─── Feature 2: Command + hover highlight + click translate ──────────────────
+// ─── Feature 2: Option + hover highlight + click translate ───────────────────
 
 const BLOCK_TAGS = new Set([
   "P", "LI", "TD", "TH", "BLOCKQUOTE",
@@ -190,22 +202,34 @@ function findTranslatable(el) {
 }
 
 document.addEventListener("keydown", (e) => {
-  if (e.key === "Meta") {
-    cmdDown = true;
-    // Highlight element currently under mouse
-    if (hoveredEl) applyHighlight(hoveredEl);
+  if (e.key !== "Alt") return;
+  altDown = true;
+  // Highlight the translatable block under the mouse. Guard against the
+  // repeated keydown events fired while the key is held — re-highlighting
+  // the same element would corrupt its saved original outline.
+  const el = hoveredEl && findTranslatable(hoveredEl);
+  if (el && el !== highlightedEl) {
+    removeHighlight();
+    applyHighlight(el);
   }
 });
 
 document.addEventListener("keyup", (e) => {
-  if (e.key === "Meta") {
-    cmdDown = false;
+  if (e.key === "Alt") {
+    altDown = false;
     removeHighlight();
   }
 });
 
+// Holding the key while switching windows means keyup never fires in the
+// page; reset state on blur so the highlight outline can't get stuck on.
+window.addEventListener("blur", () => {
+  altDown = false;
+  removeHighlight();
+});
+
 document.addEventListener("mousemove", (e) => {
-  if (!cmdDown) return;
+  if (!altDown) return;
   const el = findTranslatable(e.target);
   if (el !== highlightedEl) {
     removeHighlight();
@@ -221,7 +245,7 @@ function applyHighlight(el) {
 }
 
 document.addEventListener("mousedown", async (e) => {
-  if (!e.metaKey) return;
+  if (!e.altKey) return;
 
   const sel = window.getSelection();
   if (sel && sel.toString().trim().length > 1) return; // let feature 1 handle it
@@ -253,7 +277,7 @@ document.addEventListener("mousedown", async (e) => {
   if (!loadingEl.isConnected) return; // user navigated away
 
   if (res?.result) {
-    cache.set(text, res.result);
+    cacheSet(text, res.result);
     loadingEl.remove();
     showInlineResult(target, res.result);
   } else {

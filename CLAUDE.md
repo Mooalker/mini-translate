@@ -30,14 +30,14 @@ Key isolation is deliberate: the content script runs in untrusted page context, 
 ### Two user features (both in `content.js`)
 
 1. **Selection translation** — `mouseup` with selected text shows a "译" button near the selection; clicking it calls `sendTranslate` and renders a tooltip.
-2. **Command-hover paragraph translation** — holding `⌘` highlights the block element under the cursor (`findTranslatable` walks up to the nearest `BLOCK_TAGS` element with >20 chars); `⌘`+click inserts the translation as a sibling `<div>` directly below the original. Clicking an already-translated paragraph toggles it off.
+2. **Option-hover paragraph translation** — holding `⌥ Option` highlights the block element under the cursor (`findTranslatable` walks up to the nearest `BLOCK_TAGS` element with >20 chars); `⌥`+click inserts the translation as a sibling `<div>` directly below the original. Clicking an already-translated paragraph toggles it off. Option (not ⌘) is used to avoid colliding with the browser's native ⌘+click "open in new tab".
 
 ### Cross-cutting conventions
 
 - **Page-level cache**: `content.js` keeps a `Map` of `text → translation`, cleared on page reload. Check it before calling `sendTranslate`.
 - **Service worker wake-up**: `sendTranslate` retries once after 500ms because the MV3 service worker may be asleep when first messaged.
 - **Error codes**: `background.js` throws string codes (`NO_KEY`, `RATE_LIMIT`, `INVALID_KEY`, `EMPTY_RESPONSE`, `HTTP_*`). `content.js`'s `errorMessage()` maps them to Chinese user-facing strings. Add new codes in both places.
-- **Long text**: input over 2000 chars is truncated in `background.js`; the result is suffixed with `[文本已截断]`.
+- **Long text**: input over 2000 chars is truncated in `background.js`; the result is suffixed with `[原文过长已截断]`, and `[译文过长已截断]` is appended when Gemini's `finishReason` is `MAX_TOKENS`.
 - **Model**: `gemini-2.0-flash-lite` via `generativelanguage.googleapis.com`. The model name is hardcoded as a URL constant in both `background.js` and `popup.js` — change both together.
 
 ## Conventions

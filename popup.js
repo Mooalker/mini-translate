@@ -47,9 +47,9 @@ clearBtn.addEventListener("click", async () => {
 
 async function validateKey(key) {
   try {
-    const res = await fetch(`${GEMINI_TEST_URL}?key=${key}`, {
+    const res = await fetch(GEMINI_TEST_URL, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: { "Content-Type": "application/json", "x-goog-api-key": key },
       body: JSON.stringify({
         contents: [{ parts: [{ text: "Hi" }] }],
         generationConfig: { maxOutputTokens: 1 },
