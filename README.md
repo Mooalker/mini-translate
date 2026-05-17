@@ -36,6 +36,18 @@ mini-translate/
 
 `gemini-2.0-flash-lite` — 对混合技术/新闻/口语内容的翻译质量优于传统 NMT 引擎。
 
+## 测试
+
+E2E 测试基于 Playwright，真实加载扩展并模拟交互（划词、按键、网络 mock）。
+
+```bash
+npm install
+npx playwright install chromium
+npm test
+```
+
+覆盖：content script 注入、划词翻译、段落翻译、Command 高亮、错误处理、翻译缓存。
+
 ## License
 
 MIT

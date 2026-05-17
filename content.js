@@ -109,9 +109,19 @@ let selectionBtn = null;
 
 document.addEventListener("mouseup", async (e) => {
   if (e.metaKey) return; // feature 2 territory
+
+  // Ignore mouseup on our own UI — clicking the 「译」button must not
+  // re-trigger selection logic (which would destroy the button before
+  // its click handler runs).
+  if (
+    e.target?.closest &&
+    e.target.closest(".mini-translate-btn, .mini-translate-tooltip")
+  ) {
+    return;
+  }
+
   const sel = window.getSelection();
   const text = sel?.toString().trim();
-  console.log("[mini-translate] mouseup, selected text:", JSON.stringify(text));
 
   if (!text || text.length < 2) {
     // Don't clear immediately; let click-outside handler do it
@@ -182,7 +192,6 @@ function findTranslatable(el) {
 document.addEventListener("keydown", (e) => {
   if (e.key === "Meta") {
     cmdDown = true;
-    console.log("[mini-translate] Command key down, hover-translate active");
     // Highlight element currently under mouse
     if (hoveredEl) applyHighlight(hoveredEl);
   }

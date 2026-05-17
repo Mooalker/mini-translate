@@ -1,0 +1,12 @@
+{
+  "name": "mini-translate",
+  "version": "1.0.0",
+  "description": "极简 Chrome 翻译插件，Gemini Flash 驱动",
+  "private": true,
+  "scripts": {
+    "test": "playwright test"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.49.0"
+  }
+}

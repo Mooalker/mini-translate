@@ -36,6 +36,17 @@ async function translate(text, apiKey) {
 }
 
 chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
+  if (message.type === "OPEN_POPUP") {
+    // chrome.action.openPopup() is available in Chrome 127+; ignore failures
+    // (e.g. older Chrome, or no focused window) — fire-and-forget.
+    try {
+      chrome.action.openPopup?.()?.catch(() => {});
+    } catch (_) {
+      /* openPopup unsupported or threw synchronously */
+    }
+    return false;
+  }
+
   if (message.type !== "TRANSLATE") return false;
 
   (async () => {
