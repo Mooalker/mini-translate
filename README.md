@@ -1,24 +1,47 @@
 # Mini Translate
 
-极简 Chrome 翻译插件，Gemini Flash 驱动。两个核心功能，零 npm 依赖。
+极简 Chrome 翻译插件，Gemini 驱动。两个核心功能，零 npm 依赖。
 
 ## 功能
 
-- **划词翻译**：选中文字 → 点击「译」按钮 → tooltip 显示翻译
-- **段落沉浸翻译**：按住 `⌥ Option` + 点击段落 → 翻译结果显示在原文正下方
+- **划词翻译** — 选中网页文字，点击浮现的「译」按钮，译文显示在气泡里
+- **段落沉浸翻译** — 按住 `⌥ Option` 悬停段落，点击即把译文插入到原文正下方
 
 ## 安装
 
 1. 克隆或下载此仓库
 2. 打开 `chrome://extensions/`，开启右上角「开发者模式」
 3. 点击「加载已解压的扩展程序」，选择本文件夹
-4. 点击插件图标 → 输入 Gemini API Key → 保存并验证
+4. 点击工具栏的插件图标 → 输入 Gemini API Key → 点「保存并验证」，显示「✓ 有效」即可
 
-## 获取免费 API Key
+## 使用方法
 
-前往 [Google AI Studio](https://aistudio.google.com/apikey)，登录 Google 账号，点击「Create API key」即可。全程免费，无需信用卡。
+### 划词翻译
 
-免费配额：1,500 次请求/天，个人日常使用完全够用。
+1. 用鼠标选中网页上任意文字
+2. 选区右上角浮现「译」按钮，点击它
+3. 译文显示在白底气泡中；点击页面其他位置或按 `Esc` 关闭
+
+### 段落沉浸翻译
+
+1. 按住 `⌥ Option` 键，鼠标悬停到某个段落 —— 该段落出现蓝色描边
+2. 保持 `⌥ Option`，点击该段落，译文以浅色块插入到原文正下方
+3. 按住 `⌥ Option` 再次点击同一段落，可收起译文
+4. 译文会一直保留，直到刷新页面
+
+> 用 `⌥ Option`（而非 `⌘`）是为了避开浏览器「⌘+点击新标签打开」的冲突；点击链接段落时也不会跳转页面。
+
+## 获取 API Key
+
+前往 [Google AI Studio](https://aistudio.google.com/apikey)，登录 Google 账号，点击「Create API key」。
+
+Gemini API 有免费层（约 1,500 次/天），但**免费层在部分国家/地区不可用**。若保存 key 时提示「无可用配额 / 需启用结算」，或翻译时报配额错误，说明该账号没有免费额度，需在 [Google Cloud Console](https://console.cloud.google.com/) 为对应项目启用结算（Billing）。`gemini-2.5-flash-lite` 付费层单价极低，日常使用通常每月仅几分钱到几毛钱。
+
+## 常见问题
+
+- **划词 / Option 都没反应** — 扩展重载后，内容脚本不会自动注入到已打开的标签页，刷新一下网页即可。`chrome://`、Chrome 应用商店、PDF 等页面禁止扩展注入脚本，属正常现象。
+- **提示「请求过频」或「无可用配额」** — 多为配额或结算问题，见上方「获取 API Key」。
+- **提示「无法连接 Google」** — Chrome 无法访问 `generativelanguage.googleapis.com`，检查代理 / VPN。
 
 ## 文件结构
 
@@ -50,7 +73,7 @@ npx playwright install chromium
 npm test
 ```
 
-覆盖：content script 注入、划词翻译、段落翻译、Option 高亮、错误处理、翻译缓存。
+覆盖：内容脚本注入、划词翻译、段落翻译与高亮、容器识别、点击拦截、错误提示、Key 验证、翻译缓存。
 
 ## License
 
