@@ -149,6 +149,33 @@ test("配额为 0 的 429：显示结算提示而非「请求过频」", async (
   await expect(err).toContainText("结算");
 });
 
+test("popup 验证失败显示真实状态码，而非笼统「Key 无效」", async ({
+  context,
+  extensionId,
+}) => {
+  await context.route("**/generativelanguage.googleapis.com/**", (route) => {
+    route.fulfill({
+      status: 403,
+      contentType: "application/json",
+      body: JSON.stringify({
+        error: {
+          code: 403,
+          status: "PERMISSION_DENIED",
+          message:
+            "Generative Language API has not been used in project before " +
+            "or it is disabled.",
+        },
+      }),
+    });
+  });
+  const popup = await context.newPage();
+  await popup.goto(`chrome-extension://${extensionId}/popup.html`);
+  await popup.fill("#apiKey", "some-test-key");
+  await popup.click("#saveBtn");
+  const status = popup.locator("#status");
+  await expect(status).toContainText("403", { timeout: 5000 });
+});
+
 test("翻译缓存：相同段落不重复请求 API", async ({
   context,
   extensionId,
