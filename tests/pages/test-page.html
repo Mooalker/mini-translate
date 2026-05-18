@@ -21,6 +21,15 @@
   </p>
   <p>Single word for selection test: <span id="word">Translation</span></p>
 
+  <p id="clickable" onclick="window.__mtClicked = true;">
+    A clickable paragraph that runs a page click handler, long enough to be
+    a valid translation block on its own.
+  </p>
+  <p id="linked">
+    <a href="navigated.html" id="linkInside">A paragraph wrapped in a link,
+    long enough to qualify as a translation block by itself.</a>
+  </p>
+
   <div id="container" style="padding: 50px; background: #f0f0f0;">
     <p id="inner1">
       First nested paragraph, long enough to be a valid translation target

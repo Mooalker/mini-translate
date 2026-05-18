@@ -30,7 +30,7 @@ Key isolation is deliberate: the content script runs in untrusted page context, 
 ### Two user features (both in `content.js`)
 
 1. **Selection translation** — `mouseup` with selected text shows a "译" button near the selection; clicking it calls `sendTranslate` and renders a tooltip.
-2. **Option-hover paragraph translation** — holding `⌥ Option` highlights the block element under the cursor (`findTranslatable` walks up to the nearest `BLOCK_TAGS` element with >20 chars, skipping wrapper blocks that contain other text blocks — see `isContainer` — so the highlight stays paragraph-tight); `⌥`+click inserts the translation as a sibling `<div>` directly below the original. Clicking an already-translated paragraph toggles it off. Option (not ⌘) is used to avoid colliding with the browser's native ⌘+click "open in new tab".
+2. **Option-hover paragraph translation** — holding `⌥ Option` highlights the block element under the cursor (`findTranslatable` walks up to the nearest `BLOCK_TAGS` element with >20 chars, skipping wrapper blocks that contain other text blocks — see `isContainer` — so the highlight stays paragraph-tight); `⌥`+click inserts the translation as a sibling `<div>` directly below the original. Clicking an already-translated paragraph toggles it off. Option (not ⌘) is used to avoid colliding with the browser's native ⌘+click "open in new tab". The `click` that follows an `⌥`+mousedown is swallowed in the capture phase (`swallowNextClick`) so a paragraph that is a link doesn't navigate away and discard the inserted translation.
 
 ### Cross-cutting conventions
 

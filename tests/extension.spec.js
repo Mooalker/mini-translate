@@ -131,6 +131,85 @@ test("Option + 点击段落：翻译结果显示在原文下方", async ({
   await expect(result).toContainText("模拟翻译");
 });
 
+test("Option 翻译结果在松开 Option、移动鼠标、点击别处后仍驻留", async ({
+  context,
+  extensionId,
+}) => {
+  await setApiKey(context, extensionId, "test-key");
+  await mockGemini(context);
+  const page = await context.newPage();
+  await page.goto(PAGE);
+  await page.waitForTimeout(400);
+  const box = await page.locator("#para1").boundingBox();
+
+  await page.keyboard.down("Alt");
+  await page.mouse.move(box.x + 30, box.y + 12);
+  await page.mouse.down();
+  await page.mouse.up();
+  const result = page.locator(".mini-translate-result");
+  await expect(result).toBeVisible({ timeout: 5000 });
+
+  // Release Option — the inline translation must stay.
+  await page.keyboard.up("Alt");
+  await page.waitForTimeout(300);
+  await expect(result).toBeVisible();
+  await expect(result).toContainText("模拟翻译");
+
+  // Move the mouse around and click elsewhere — still must stay.
+  await page.mouse.move(5, 5);
+  await page.mouse.move(box.x + 120, box.y + 240);
+  await page.mouse.click(box.x + 150, box.y + 300);
+  await page.waitForTimeout(300);
+  await expect(result).toBeVisible();
+});
+
+test("Option+点击段落不触发页面点击处理器，译文保留", async ({
+  context,
+  extensionId,
+}) => {
+  await setApiKey(context, extensionId, "test-key");
+  await mockGemini(context);
+  const page = await context.newPage();
+  await page.goto(PAGE);
+  await page.waitForTimeout(400);
+
+  const box = await page.locator("#clickable").boundingBox();
+  await page.keyboard.down("Alt");
+  await page.mouse.move(box.x + 20, box.y + 10);
+  await page.mouse.down();
+  await page.mouse.up();
+  await page.keyboard.up("Alt");
+
+  await expect(page.locator(".mini-translate-result")).toBeVisible({
+    timeout: 5000,
+  });
+  // The paragraph's own onclick must NOT have fired.
+  const pageClicked = await page.evaluate(() => window.__mtClicked === true);
+  expect(pageClicked).toBe(false);
+});
+
+test("Option+点击链接段落不跳转页面", async ({ context, extensionId }) => {
+  await setApiKey(context, extensionId, "test-key");
+  await mockGemini(context);
+  const page = await context.newPage();
+  await page.goto(PAGE);
+  await page.waitForTimeout(400);
+
+  const box = await page.locator("#linked").boundingBox();
+  await page.keyboard.down("Alt");
+  await page.mouse.move(box.x + 20, box.y + 10);
+  await page.mouse.down();
+  await page.mouse.up();
+  await page.keyboard.up("Alt");
+
+  await expect(page.locator(".mini-translate-result")).toBeVisible({
+    timeout: 5000,
+  });
+  await page.waitForTimeout(300);
+  // The link must not have navigated the page away.
+  expect(page.url()).toContain("test-page.html");
+});
+
 test("未配置 API Key 时显示错误提示", async ({ context }) => {
   // Fresh context = empty storage = no key
   const page = await context.newPage();

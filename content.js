@@ -17,6 +17,11 @@ let altDown = false;
 let hoveredEl = null;
 let highlightedEl = null;
 
+// Set by an Option+mousedown so the click that follows the mouse release can
+// be swallowed — otherwise a paragraph that is (or contains) a link would
+// navigate away on release and wipe the translation we just inserted.
+let swallowNextClick = false;
+
 // ─── DOM helpers ────────────────────────────────────────────────────────────
 
 function removeAllTooltips() {
@@ -267,6 +272,9 @@ function applyHighlight(el) {
 }
 
 document.addEventListener("mousedown", async (e) => {
+  // Clear any stale flag: every click is preceded by its own mousedown, so
+  // resetting here means the flag always reflects this exact press.
+  swallowNextClick = false;
   if (!e.altKey) return;
 
   const sel = window.getSelection();
@@ -276,6 +284,9 @@ document.addEventListener("mousedown", async (e) => {
   if (!target) return;
 
   e.preventDefault(); // prevent text selection on click
+  // Neutralize the click that follows this mousedown so links don't
+  // navigate and the page's own click handlers don't fire.
+  swallowNextClick = true;
 
   const text = (target.innerText ?? "").trim();
   if (!text) return;
@@ -311,3 +322,17 @@ document.addEventListener("mousedown", async (e) => {
     }
   }
 });
+
+// Swallow the click that follows an Option+mousedown (see swallowNextClick).
+// Capture phase + stopImmediatePropagation so the page never sees it — no
+// navigation, no site click handlers — and the inline translation stays put.
+window.addEventListener(
+  "click",
+  (e) => {
+    if (!swallowNextClick) return;
+    swallowNextClick = false;
+    e.preventDefault();
+    e.stopImmediatePropagation();
+  },
+  true,
+);

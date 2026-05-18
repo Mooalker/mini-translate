@@ -23,13 +23,14 @@
   z-index: 2147483647;
   max-width: 400px;
   padding: 8px 12px;
-  background: #1a1a1a;
-  color: #f0f0f0;
+  background: #ffffff;
+  color: #1a1a1a;
+  border: 1px solid #e0e0e0;
   border-radius: 6px;
   font-size: 13px;
   font-family: -apple-system, BlinkMacSystemFont, sans-serif;
   line-height: 1.6;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
   pointer-events: none;
   white-space: pre-wrap;
   word-break: break-word;
