@@ -79,6 +79,38 @@ test("按住 Option 悬停高亮段落", async ({ context }) => {
   expect(outline).toContain("2px");
 });
 
+test("Option 悬停容器 div：不整体高亮，只命中真正的段落", async ({
+  context,
+}) => {
+  const page = await context.newPage();
+  await page.goto(PAGE);
+  await page.waitForTimeout(400);
+
+  await page.keyboard.down("Alt");
+
+  // Hover the container's own padding (above the nested <p>s). The wrapper
+  // div must NOT get highlighted — it holds multiple paragraphs.
+  const cbox = await page.locator("#container").boundingBox();
+  await page.mouse.move(cbox.x + cbox.width / 2, cbox.y + 12);
+  await page.waitForTimeout(200);
+  const containerOutline = await page
+    .locator("#container")
+    .evaluate((el) => el.style.outline);
+
+  // Hover an actual nested paragraph — that <p> should be highlighted.
+  const pbox = await page.locator("#inner1").boundingBox();
+  await page.mouse.move(pbox.x + pbox.width / 2, pbox.y + pbox.height / 2);
+  await page.waitForTimeout(200);
+  const innerOutline = await page
+    .locator("#inner1")
+    .evaluate((el) => el.style.outline);
+
+  await page.keyboard.up("Alt");
+
+  expect(containerOutline).not.toContain("solid"); // wrapper not highlighted
+  expect(innerOutline).toContain("solid"); // paragraph highlighted
+});
+
 test("Option + 点击段落：翻译结果显示在原文下方", async ({
   context,
   extensionId,

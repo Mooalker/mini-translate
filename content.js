@@ -182,18 +182,39 @@ document.addEventListener("keydown", (e) => {
 
 // ─── Feature 2: Option + hover highlight + click translate ───────────────────
 
+// Tags that can be a single translatable paragraph. ARTICLE/SECTION are
+// deliberately excluded — they are whole-document containers, never one
+// paragraph. DIV stays because many sites use it as a paragraph, but a DIV
+// that wraps other blocks is rejected by isContainer() below.
 const BLOCK_TAGS = new Set([
   "P", "LI", "TD", "TH", "BLOCKQUOTE",
   "H1", "H2", "H3", "H4", "H5", "H6",
-  "ARTICLE", "SECTION", "DIV",
+  "DIV",
 ]);
+
+// A block that itself contains other substantial block-level elements is a
+// wrapper (e.g. an article body holding many paragraphs), not a single
+// paragraph. Highlighting/translating it would cover far more than the user
+// pointed at — which is exactly the over-selection we want to avoid.
+function isContainer(node) {
+  for (const child of node.children) {
+    if (
+      BLOCK_TAGS.has(child.tagName) &&
+      (child.innerText ?? "").trim().length > 20
+    ) {
+      return true;
+    }
+  }
+  return false;
+}
 
 function findTranslatable(el) {
   let node = el;
   while (node && node !== document.body) {
     if (
       BLOCK_TAGS.has(node.tagName) &&
-      (node.innerText ?? "").trim().length > 20
+      (node.innerText ?? "").trim().length > 20 &&
+      !isContainer(node)
     ) {
       return node;
     }
