@@ -38,7 +38,7 @@ Key isolation is deliberate: the content script runs in untrusted page context, 
 - **Service worker wake-up**: `sendTranslate` retries once after 500ms because the MV3 service worker may be asleep when first messaged.
 - **Error codes**: `background.js` throws string codes (`NO_KEY`, `RATE_LIMIT`, `INVALID_KEY`, `EMPTY_RESPONSE`, `HTTP_*`). `content.js`'s `errorMessage()` maps them to Chinese user-facing strings. Add new codes in both places.
 - **Long text**: input over 2000 chars is truncated in `background.js`; the result is suffixed with `[原文过长已截断]`, and `[译文过长已截断]` is appended when Gemini's `finishReason` is `MAX_TOKENS`.
-- **Model**: `gemini-2.0-flash-lite` via `generativelanguage.googleapis.com`. The model name is hardcoded as a URL constant in both `background.js` and `popup.js` — change both together.
+- **Model**: `gemini-2.5-flash-lite` via `generativelanguage.googleapis.com`. The model name is hardcoded as a URL constant in both `background.js` and `popup.js` — change both together.
 
 ## Conventions
 

@@ -106,6 +106,7 @@ function errorMessage(code) {
   const map = {
     NO_KEY: "请先在插件设置中配置 Gemini API Key",
     RATE_LIMIT: "请求过频，稍后再试",
+    QUOTA_EXHAUSTED: "API 配额不足：该 key 无免费额度或已用尽，需在 Google Cloud 启用结算",
     INVALID_KEY: "API Key 无效，请在设置中重新配置",
     EMPTY_RESPONSE: "翻译失败，请重试",
     TIMEOUT: "翻译超时，请检查网络后重试",

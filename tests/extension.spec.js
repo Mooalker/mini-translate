@@ -115,6 +115,40 @@ test("未配置 API Key 时显示错误提示", async ({ context }) => {
   await expect(err).toContainText("API Key");
 });
 
+test("配额为 0 的 429：显示结算提示而非「请求过频」", async ({
+  context,
+  extensionId,
+}) => {
+  await setApiKey(context, extensionId, "test-key");
+  await context.route("**/generativelanguage.googleapis.com/**", (route) => {
+    route.fulfill({
+      status: 429,
+      contentType: "application/json",
+      body: JSON.stringify({
+        error: {
+          code: 429,
+          status: "RESOURCE_EXHAUSTED",
+          message:
+            "You exceeded your current quota. Quota exceeded for metric: " +
+            "generate_content_free_tier_requests, limit: 0, model: gemini-2.5-flash-lite",
+        },
+      }),
+    });
+  });
+  const page = await context.newPage();
+  await page.goto(PAGE);
+  await page.waitForTimeout(400);
+  const box = await page.locator("#para1").boundingBox();
+  await page.keyboard.down("Alt");
+  await page.mouse.move(box.x + 30, box.y + 12);
+  await page.mouse.down();
+  await page.mouse.up();
+  await page.keyboard.up("Alt");
+  const err = page.locator(".mini-translate-error");
+  await expect(err).toBeVisible({ timeout: 5000 });
+  await expect(err).toContainText("结算");
+});
+
 test("翻译缓存：相同段落不重复请求 API", async ({
   context,
   extensionId,

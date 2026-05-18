@@ -4,7 +4,7 @@ const clearBtn = document.getElementById("clearBtn");
 const statusEl = document.getElementById("status");
 
 const GEMINI_TEST_URL =
-  "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-lite:generateContent";
+  "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-lite:generateContent";
 
 // Load existing key
 chrome.storage.local.get("apiKey", ({ apiKey }) => {
@@ -33,7 +33,12 @@ saveBtn.addEventListener("click", async () => {
   } else if (valid === "rate_limit") {
     // Key likely valid but we're rate limited; save anyway
     await chrome.storage.local.set({ apiKey: key });
-    setStatus("ok", "✓ 已保存（无法验证：请求过频）");
+    setStatus("ok", "✓ 已保存（暂时请求过频，未能验证）");
+  } else if (valid === "quota_exhausted") {
+    // Key is valid but the project has no usable quota — save it (it will
+    // work once billing is enabled) but make the real problem visible.
+    await chrome.storage.local.set({ apiKey: key });
+    setStatus("err", "⚠ 已保存，但该 key 无可用配额：需在 Google Cloud 启用结算");
   } else {
     setStatus("err", "✗ Key 无效，请检查后重试");
   }
@@ -56,7 +61,10 @@ async function validateKey(key) {
       }),
     });
     if (res.ok) return true;
-    if (res.status === 429) return "rate_limit";
+    if (res.status === 429) {
+      const body = await res.text().catch(() => "");
+      return /limit:\s*0\b/.test(body) ? "quota_exhausted" : "rate_limit";
+    }
     return false;
   } catch {
     return false;

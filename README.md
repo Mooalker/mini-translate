@@ -34,7 +34,7 @@ mini-translate/
 
 ## 翻译模型
 
-`gemini-2.0-flash-lite` — 对混合技术/新闻/口语内容的翻译质量优于传统 NMT 引擎。
+`gemini-2.5-flash-lite` — 对混合技术/新闻/口语内容的翻译质量优于传统 NMT 引擎。
 
 ## 隐私说明
 

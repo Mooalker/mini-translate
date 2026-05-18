@@ -1,5 +1,5 @@
 const GEMINI_API_URL =
-  "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-lite:generateContent";
+  "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-lite:generateContent";
 
 const MAX_INPUT_CHARS = 2000;
 const REQUEST_TIMEOUT_MS = 15000;
@@ -44,7 +44,13 @@ async function translate(text, apiKey) {
 
   if (!response.ok) {
     const status = response.status;
-    if (status === 429) throw new Error("RATE_LIMIT");
+    if (status === 429) {
+      // 429 is RESOURCE_EXHAUSTED. "limit: 0" means the project has no quota
+      // at all for this model (free tier unavailable / billing not enabled) —
+      // a structural problem, not a transient burst worth retrying.
+      const body = await response.text().catch(() => "");
+      throw new Error(/limit:\s*0\b/.test(body) ? "QUOTA_EXHAUSTED" : "RATE_LIMIT");
+    }
     if (status === 401 || status === 403) throw new Error("INVALID_KEY");
     if (status === 400) {
       // 400 covers both a bad key and a malformed request — disambiguate
